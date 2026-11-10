@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>延岡の街で見つける！あなたへの推しパン診断</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Zen Maru Gothic -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- QRCode.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Zen Maru Gothic"', 'sans-serif'],
+          },
+          colors: {
+            bakery: {
+              cream: '#FDFBF7',
+              wheat: '#F5EBE1',
+              crust: '#E2C799',
+              caramel: '#C08240',
+              toast: '#8C5325',
+              choc: '#4A2E18',
+              accent: '#E65C00'
+            }
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+              '50%': { transform: 'translateY(-6px) rotate(2deg)' },
+            },
+            pulseSubtle: {
+              '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+              '50%': { opacity: '0.9', transform: 'scale(1.02)' }
+            }
+          },
+          animation: {
+            float: 'float 3.5s ease-in-out infinite',
+            'pulse-subtle': 'pulseSubtle 2s infinite ease-in-out'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* 滑らかなスクロールとタッチ操作用最適化 */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    body {
+      background-color: #F8F4EE;
+      background-image: radial-gradient(#E8DCCD 1px, transparent 1px);
+      background-size: 18px 18px;
+    }
+    .custom-shadow {
+      box-shadow: 0 10px 25px -5px rgba(140, 83, 37, 0.12), 0 8px 10px -6px rgba(140, 83, 37, 0.08);
+    }
+    .card-press:active {
+      transform: scale(0.97);
+    }
+  </style>
+</head>
+<body class="min-h-screen font-sans text-bakery-choc flex flex-col justify-between selection:bg-bakery-crust selection:text-bakery-choc">
+  
+  <!-- ヘッダー -->
+  <header class="w-full max-w-md mx-auto pt-5 px-4 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl animate-float">🥐</span>
+      <span class="text-xs font-bold tracking-wider text-bakery-toast uppercase bg-bakery-wheat/80 px-2.5 py-1 rounded-full border border-bakery-crust/40">
+        Nobeoka Bakery Navi
+      </span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="btn-header-qr" class="text-xs font-semibold text-bakery-toast bg-white/80 hover:bg-white px-2.5 py-1 rounded-full border border-bakery-crust/40 flex items-center gap-1 shadow-sm transition">
+        <i data-lucide="qr-code" class="w-3.5 h-3.5 text-bakery-accent"></i> サイトQR
+      </button>
+      <div class="text-xs font-semibold text-bakery-toast/80 flex items-center gap-1">
+        <i data-lucide="map-pin" class="w-3.5 h-3.5 text-bakery-accent"></i> 延岡市
+      </div>
+    </div>
+  </header>
+  
+  <!-- メインコンテンツコンテナ -->
+  <main class="w-full max-w-md mx-auto px-4 py-4 flex-1 flex flex-col justify-center">
+ 
+    <!-- 1. スタート画面 -->
+    <section id="view-start" class="transition-all duration-300 flex flex-col items-center text-center">
+      <div class="relative my-4">
+        <div class="w-32 h-32 sm:w-36 sm:h-36 bg-gradient-to-tr from-amber-100 to-orange-50 rounded-full flex items-center justify-center border-4 border-white shadow-lg mx-auto">
+          <span class="text-6xl sm:text-7xl select-none animate-float filter drop-shadow">🥖</span>
+        </div>
+        <span class="absolute -bottom-2 -right-2 bg-bakery-accent text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+          4問でサクッと診断
+        </span>
+      </div>
+ 
+      <div class="space-y-2 mb-6">
+        <span class="text-xs font-bold text-bakery-toast tracking-widest block">宮崎・延岡のパン屋めぐり</span>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-bakery-choc leading-tight">
+          あなたへの<br><span class="text-bakery-accent">推しパン</span>占い
+        </h1>
+        <p class="text-sm text-bakery-toast/90 px-4 pt-1 leading-relaxed">
+          今の気分やシチュエーションから、延岡市内の名店と「今食べるべき最高の一品」をご提案します！
+        </p>
+      </div>
+ 
+      <!-- 特徴アイコンバッジ -->
+      <div class="grid grid-cols-3 gap-2 w-full max-w-xs mb-6 text-xs text-bakery-toast">
+        <div class="bg-white/80 p-2.5 rounded-2xl border border-bakery-wheat flex flex-col items-center gap-1 shadow-sm">
+          <span class="text-lg">⏱️</span>
+          <span class="font-bold">約30秒</span>
+        </div>
+        <div class="bg-white/80 p-2.5 rounded-2xl border border-bakery-wheat flex flex-col items-center gap-1 shadow-sm">
+          <span class="text-lg">🍞</span>
+          <span class="font-bold">延岡の名店</span>
+        </div>
+        <div class="bg-white/80 p-2.5 rounded-2xl border border-bakery-wheat flex flex-col items-center gap-1 shadow-sm">
+          <span class="text-lg">✨</span>
+          <span class="font-bold">今日のおやつ</span>
+        </div>
+      </div>
+ 
+      <button id="btn-start" class="w-full max-w-xs py-4 px-6 bg-gradient-to-r from-bakery-accent to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-lg rounded-2xl shadow-lg shadow-orange-500/25 transition card-press flex items-center justify-center gap-2 group mb-3">
+        <span>診断をスタートする</span>
+        <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+      </button>
+
+      <!-- サイト用QRコード呼び出しボタン -->
+      <button id="btn-site-qr" class="w-full max-w-xs py-2.5 px-4 bg-white/90 hover:bg-white text-bakery-toast font-bold text-xs rounded-xl border border-bakery-crust/60 transition card-press flex items-center justify-center gap-1.5 shadow-sm">
+        <i data-lucide="qr-code" class="w-4 h-4 text-bakery-accent"></i>
+        <span>このサイトのアクセス用QRコードを表示</span>
+      </button>
+
+      <p class="text-[11px] text-stone-400 mt-4">延岡のベーカリー文化を応援しています</p>
+    </section>
+ 
+    <!-- 2. 質問画面 -->
+    <section id="view-question" class="hidden transition-all duration-300">
+      <!-- プログレスバー -->
+      <div class="mb-5">
+        <div class="flex justify-between items-center text-xs font-bold text-bakery-toast mb-2">
+          <span id="question-indicator">質問 1 / 4</span>
+          <span id="progress-percent" class="text-bakery-accent">25%</span>
+        </div>
+        <div class="w-full bg-bakery-wheat/80 h-2.5 rounded-full overflow-hidden p-0.5 border border-bakery-crust/30">
+          <div id="progress-bar" class="bg-gradient-to-r from-amber-400 to-bakery-accent h-full rounded-full transition-all duration-300 ease-out" style="width: 25%"></div>
+        </div>
+      </div>
+ 
+      <!-- 質問カード -->
+      <div class="bg-white rounded-3xl p-5 sm:p-6 custom-shadow border border-bakery-wheat mb-4 text-center">
+        <span id="q-category" class="inline-block px-3 py-0.5 text-xs font-bold text-bakery-caramel bg-bakery-wheat/60 rounded-full mb-2">
+          気分チェック
+        </span>
+        <h2 id="q-text" class="text-lg sm:text-xl font-black text-bakery-choc mb-1 min-h-[3rem] flex items-center justify-center">
+          質問内容がここに入ります
+        </h2>
+        <p id="q-sub" class="text-xs text-bakery-toast/70">直感でパッと選んでみてくださいね</p>
+      </div>
+ 
+      <!-- 選択肢リスト (4択) -->
+      <div id="options-container" class="space-y-2.5">
+        <!-- JSで動的にボタン生成 -->
+      </div>
+    </section>
+ 
+    <!-- 3. 結果算出中のローディング画面 -->
+    <section id="view-loading" class="hidden text-center py-12">
+      <div class="relative w-24 h-24 mx-auto mb-6">
+        <div class="absolute inset-0 rounded-full border-4 border-bakery-wheat border-t-bakery-accent animate-spin"></div>
+        <div class="absolute inset-0 flex items-center justify-center text-4xl animate-bounce">
+          🥖
+        </div>
+      </div>
+      <h3 class="text-lg font-bold text-bakery-choc mb-2">延岡のパン屋さんから選定中...</h3>
+      <p class="text-xs text-bakery-toast">あなたの好みにぴったりの「推しパン」を焼いています</p>
+    </section>
+ 
+    <!-- 4. 結果画面 -->
+    <section id="view-result" class="hidden transition-all duration-300 space-y-4">
+      <!-- 診断結果メインカード -->
+      <div class="bg-white rounded-3xl p-6 custom-shadow border-2 border-amber-200/80 relative overflow-hidden text-center">
+        <div class="absolute top-0 left-0 right-0 h-2.5 bg-gradient-to-r from-amber-400 via-bakery-accent to-amber-600"></div>
+ 
+        <div class="inline-block bg-amber-50 text-bakery-accent border border-amber-200 text-xs font-bold px-3 py-1 rounded-full mb-3 mt-1">
+          ✨ あなたにぴったりの推しパンはこれ！ ✨
+        </div>
+ 
+        <!-- パンのビジュアル/アイコン -->
+        <div class="w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-b from-amber-50 to-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner border border-amber-100">
+          <span id="res-icon" class="text-5xl sm:text-6xl animate-float">🥯</span>
+        </div>
+ 
+        <span id="res-catchphrase" class="text-xs font-bold text-bakery-caramel tracking-wide block mb-1">
+          香ばしさと優しい甘さの極上ハーモニー
+        </span>
+        <h2 id="res-bread-name" class="text-xl sm:text-2xl font-black text-bakery-choc mb-2">
+          商品名がここに入ります
+        </h2>
+ 
+        <!-- おすすめ度スター -->
+        <div class="flex justify-center items-center gap-1 text-amber-400 text-xs mb-4">
+          <span>★★★★★</span>
+          <span class="text-bakery-toast font-bold ml-1 text-xs">運命の出会い度 100%</span>
+        </div>
+ 
+        <!-- 推しポイント -->
+        <div class="bg-bakery-wheat/40 rounded-2xl p-4 text-left border border-bakery-wheat text-xs sm:text-sm text-bakery-toast leading-relaxed mb-4">
+          <p id="res-description">
+            説明文がここに入ります。
+          </p>
+          <div class="mt-2.5 pt-2.5 border-t border-bakery-crust/30 flex items-center gap-1.5 text-xs font-bold text-bakery-accent">
+            <i data-lucide="sparkles" class="w-4 h-4 shrink-0"></i>
+            <span id="res-recommend-time">おすすめの食べ方：焼きたてをそのまま！</span>
+          </div>
+        </div>
+ 
+        <!-- 店舗情報ボックス -->
+        <div class="bg-amber-50/70 rounded-2xl p-4 border border-amber-200/60 text-left">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-1.5">
+              <span class="bg-bakery-choc text-white text-[10px] font-bold px-2 py-0.5 rounded-md">買えるお店</span>
+              <h4 id="res-shop-name" class="font-extrabold text-sm sm:text-base text-bakery-choc">
+                店舗名
+              </h4>
+            </div>
+            <span id="res-shop-area" class="text-[11px] font-bold text-bakery-caramel bg-white px-2 py-0.5 rounded-full border border-bakery-crust/40">
+              エリア
+            </span>
+          </div>
+ 
+          <div class="space-y-1 text-xs text-bakery-toast/90">
+            <div class="flex items-start gap-1.5">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-bakery-accent shrink-0 mt-0.5"></i>
+              <span id="res-shop-address">宮崎県延岡市...</span>
+            </div>
+            <div class="flex items-start gap-1.5">
+              <i data-lucide="info" class="w-3.5 h-3.5 text-bakery-caramel shrink-0 mt-0.5"></i>
+              <span id="res-shop-feature">地元で愛されるアットホームなお店</span>
+            </div>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- アクションボタンエリア -->
+      <div class="space-y-2.5 pt-1">
+        <div class="grid grid-cols-2 gap-2">
+          <!-- シェアボタン -->
+          <button id="btn-share" class="py-3.5 px-3 bg-bakery-choc hover:bg-stone-800 text-white font-bold text-xs rounded-2xl shadow-md transition card-press flex items-center justify-center gap-1.5">
+            <i data-lucide="share-2" class="w-4 h-4"></i>
+            <span>結果をシェア</span>
+          </button>
+          
+          <!-- 結果QRコードボタン -->
+          <button id="btn-result-qr" class="py-3.5 px-3 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-2xl shadow-md transition card-press flex items-center justify-center gap-1.5">
+            <i data-lucide="qr-code" class="w-4 h-4"></i>
+            <span>結果用QRコード</span>
+          </button>
+        </div>
+ 
+        <div class="grid grid-cols-2 gap-2">
+          <!-- マップで探すボタン -->
+          <a id="btn-map" href="#" target="_blank" rel="noopener noreferrer" class="py-3 px-3 bg-white hover:bg-stone-50 border border-bakery-crust/60 text-bakery-toast font-bold text-xs rounded-2xl transition flex items-center justify-center gap-1.5 shadow-sm text-center">
+            <i data-lucide="external-link" class="w-3.5 h-3.5 text-bakery-accent"></i>
+            <span>Googleマップ</span>
+          </a>
+ 
+          <!-- もう一度診断する -->
+          <button id="btn-retry" class="py-3 px-3 bg-bakery-wheat hover:bg-bakery-crust/50 text-bakery-choc font-bold text-xs rounded-2xl transition card-press flex items-center justify-center gap-1.5 text-center">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <span>もう一度占う</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+ 
+  <!-- QRコード表示モーダル -->
+  <div id="modal-qr" class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-white w-full max-w-xs rounded-3xl p-6 custom-shadow text-center relative border border-amber-100 flex flex-col items-center">
+      <button id="btn-close-qr" class="absolute top-4 right-4 text-stone-400 hover:text-stone-600 p-1">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <span id="qr-modal-tag" class="text-[10px] font-bold text-bakery-caramel bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 mb-1">
+        QRコード
+      </span>
+      <h3 id="qr-modal-title" class="text-base font-extrabold text-bakery-choc mb-3">
+        アクセス用QRコード
+      </h3>
+
+      <!-- QRコード描画コンテナ -->
+      <div class="p-3 bg-white border-2 border-bakery-wheat rounded-2xl shadow-inner mb-3">
+        <div id="qrcode-container" class="flex justify-center items-center"></div>
+      </div>
+
+      <p class="text-[11px] text-stone-500 mb-3 leading-relaxed">
+        スマホのカメラで読み取るとアクセスできます
+      </p>
+
+      <!-- URL手動コピー＆保存ボタン -->
+      <div class="w-full space-y-2">
+        <button id="btn-copy-url" class="w-full py-2.5 px-3 bg-bakery-wheat hover:bg-bakery-crust/60 text-bakery-choc font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5">
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          <span>URLをコピーする</span>
+        </button>
+        <button id="btn-download-qr" class="w-full py-2.5 px-4 bg-bakery-accent hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-1.5">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i>
+          <span>QR画像をダウンロード</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- コピー通知トースト -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-stone-900/90 text-white text-xs px-4 py-2.5 rounded-full shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 z-50 flex items-center gap-2">
+    <i data-lucide="check" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toast-text">結果をクリップボードにコピーしました！</span>
+  </div>
+ 
+  <!-- フッター -->
+  <footer class="w-full max-w-md mx-auto text-center py-3 text-[11px] text-stone-400">
+    延岡の美味しいパン巡りを楽しもう © Nobeoka Bakery Guide
+  </footer>
+ 
+  <script>
+    // --- 診断データ定義 ---
+    const QUESTIONS = [
+      {
+        id: 1,
+        category: "Q1. 今日の気分",
+        question: "今、一番ピンとくる気分は？",
+        options: [
+          { label: "しっかりガッツリ、パワーをつけたい！", type: "savory", icon: "🍖" },
+          { label: "ほっと癒やされる甘いものが食べたい", type: "sweet", icon: "🍯" },
+          { label: "素材をじっくり味わう香ばしさが欲しい", type: "hard", icon: "🌾" },
+          { label: "ホッとする定番・素朴な安心感がいい", type: "classic", icon: "☕" }
+        ]
+      },
+      {
+        id: 2,
+        category: "Q2. 食べる時間・シーン",
+        question: "どんなシチュエーションで味わいたい？",
+        options: [
+          { label: "元気を目覚めさせる香ばしい朝食に", type: "hard", icon: "☀️" },
+          { label: "午後3時のご褒美おやつ＆カフェタイム", type: "sweet", icon: "🫖" },
+          { label: "大満足のしっかりランチにしたい！", type: "savory", icon: "🥪" },
+          { label: "家族と分け合ったり、懐かしい気分で", type: "classic", icon: "🏡" }
+        ]
+      },
+      {
+        id: 3,
+        category: "Q3. 好きな食感",
+        question: "噛んだときの理想の食感はどれ？",
+        options: [
+          { label: "噛むほどに旨味あふれる「外カリッ・中モチッ」", type: "hard", icon: "🥖" },
+          { label: "口の中でとろけるような「ふわふわ・柔らか」", type: "classic", icon: "☁️" },
+          { label: "バターの香りが弾ける「サクサク香ばしい」", type: "sweet", icon: "🥐" },
+          { label: "具材たっぷりで「ジューシー＆もっちり」", type: "savory", icon: "🧀" }
+        ]
+      },
+      {
+        id: 4,
+        category: "Q4. お出かけの予定は？",
+        question: "このパンを持ってどこへ行く？",
+        options: [
+          { label: "延岡の自然や公園へピクニック！", type: "savory", icon: "🧺" },
+          { label: "お気に入りのコーヒーを淹れておうちで", type: "sweet", icon: "🛋️" },
+          { label: "ドライブやお散歩の途中でサクッと", type: "classic", icon: "🚗" },
+          { label: "ワインやお料理と一緒にディナー風に", type: "hard", icon: "🍷" }
+        ]
+      }
+    ];
+ 
+    // 延岡市の実在ベーカリー＆人気名物パンをモチーフにした結果データ
+    const RESULTS = {
+      classic: {
+        breadName: "幻のやわらかコッペパン",
+        icon: "🥖",
+        catchphrase: "延岡市民のソウルフード！世代を超えて愛される味",
+        description: "昭和から親しまれる老舗ならではの、ふっくら優しい口どけ。甘酸っぱいジャムや自家製ピーナッツクリームなどをサンドした、どこか懐かしく温かい気持ちになれる延岡自慢の名物パンです。",
+        recommendTime: "牛乳や淹れたて緑茶と一緒に、のんびりおやつに！",
+        shopName: "原田パン（ベーカリー原田）",
+        shopArea: "延岡市山下町",
+        shopAddress: "宮崎県延岡市山下町1丁目",
+        shopFeature: "学校給食や地元売店でも愛され続ける、延岡を代表する老舗ベーカリー。"
+      },
+      sweet: {
+        breadName: "芳醇バターの極上クロワッサン & デニッシュ",
+        icon: "🥐",
+        catchphrase: "幾重にも重なるサクサク食感とあふれるバターの香り",
+        description: "ひと口かじればパリッと心地よい音が響き、上質な発酵バターのコクとほのかな甘みが口いっぱいに広がります。コーヒーや紅茶との相性抜群で、自分への贅沢なご褒美にぴったり。",
+        recommendTime: "トースターで1分温めて、サクふわ感を復活させて！",
+        shopName: "ベーカリーカフェ 麦畑 / 地元人気パティスリー＆ベーカリー",
+        shopArea: "延岡市出北・愛宕町エリア",
+        shopAddress: "宮崎県延岡市出北周辺",
+        shopFeature: "素材にこだわり、朝から焼き立ての甘い香りが漂うおしゃれな街のパン屋。"
+      },
+      savory: {
+        breadName: "宮崎・延岡名物 チキン南蛮ドッグ / 贅沢総菜パン",
+        icon: "🌭",
+        catchphrase: "ジューシーな旨味と特製タルタルがパンと奇跡の合体！",
+        description: "宮崎発祥のチキン南蛮や延岡ならではの食材をふんだんに盛り込んだボリューミーな総菜パン。もっちりパンに自家製南蛮タレと濃厚タルタルソースが絡み、一口で満たされること間違いなしです！",
+        recommendTime: "お昼休みのスタミナ補給や、河川敷ピクニックに！",
+        shopName: "ブレッドファクトリー / 市内惣菜ベーカリー",
+        shopArea: "延岡市平原町・駅前エリア",
+        shopAddress: "宮崎県延岡市平原町周辺",
+        shopFeature: "お昼前には出来立て総菜パンがずらりと並ぶ、働く人の強い味方。"
+      },
+      hard: {
+        breadName: "自家製酵母のカンパーニュ＆もっちりベーグル",
+        icon: "🥯",
+        catchphrase: "噛むほどに小麦の風味が広がる本格派ハードブレッド",
+        description: "厳選した小麦粉と天然酵母でじっくり発酵させた、職人のこだわりが詰まった逸品。外側は香ばしくクラストの引きが心地よく、内側はもっちり水分を含んだ深い味わいです。",
+        recommendTime: "オリーブオイルやチーズ、夜のワインのお供に！",
+        shopName: "天然酵母パン・ベーグル専門店 (延岡)",
+        shopArea: "延岡市祇園町・大貫町エリア",
+        shopAddress: "宮崎県延岡市大貫町周辺",
+        shopFeature: "粉の香りと酵母の旨味を大切にする、パン好きが集う隠れ家的名店。"
+      }
+    };
+ 
+    // --- アプリケーション状態 ---
+    let currentStep = 0;
+    let scores = { classic: 0, sweet: 0, savory: 0, hard: 0 };
+    let currentResult = null;
+    let qrcodeInstance = null;
+    let activeQrUrl = '';
+    let currentQrFileName = 'nobeoka-pan-qr.png';
+ 
+    // DOM要素
+    const viewStart = document.getElementById('view-start');
+    const viewQuestion = document.getElementById('view-question');
+    const viewLoading = document.getElementById('view-loading');
+    const viewResult = document.getElementById('view-result');
+ 
+    const btnStart = document.getElementById('btn-start');
+    const btnRetry = document.getElementById('btn-retry');
+    const btnShare = document.getElementById('btn-share');
+    const btnMap = document.getElementById('btn-map');
+    const btnResultQr = document.getElementById('btn-result-qr');
+    const btnSiteQr = document.getElementById('btn-site-qr');
+    const btnHeaderQr = document.getElementById('btn-header-qr');
+
+    const modalQr = document.getElementById('modal-qr');
+    const btnCloseQr = document.getElementById('btn-close-qr');
+    const btnDownloadQr = document.getElementById('btn-download-qr');
+    const btnCopyUrl = document.getElementById('btn-copy-url');
+    const qrContainer = document.getElementById('qrcode-container');
+    const qrModalTitle = document.getElementById('qr-modal-title');
+    const qrModalTag = document.getElementById('qr-modal-tag');
+ 
+    const qCategory = document.getElementById('q-category');
+    const qText = document.getElementById('q-text');
+    const optionsContainer = document.getElementById('options-container');
+    const questionIndicator = document.getElementById('question-indicator');
+    const progressBar = document.getElementById('progress-bar');
+    const progressPercent = document.getElementById('progress-percent');
+ 
+    const toast = document.getElementById('toast');
+    const toastText = document.getElementById('toast-text');
+ 
+    // --- 初期化 ---
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      attachEvents();
+    });
+ 
+    function attachEvents() {
+      btnStart.addEventListener('click', startQuiz);
+      btnRetry.addEventListener('click', resetQuiz);
+      btnShare.addEventListener('click', shareResult);
+      btnResultQr.addEventListener('click', openResultQrModal);
+      btnSiteQr.addEventListener('click', openSiteQrModal);
+      btnHeaderQr.addEventListener('click', openSiteQrModal);
+      btnCloseQr.addEventListener('click', closeQrModal);
+      btnDownloadQr.addEventListener('click', downloadQrCode);
+      btnCopyUrl.addEventListener('click', copyCurrentQrUrl);
+
+      // モーダル外側クリックで閉じる
+      modalQr.addEventListener('click', (e) => {
+        if (e.target === modalQr) closeQrModal();
+      });
+    }
+ 
+    // クイズ開始
+    function startQuiz() {
+      currentStep = 0;
+      scores = { classic: 0, sweet: 0, savory: 0, hard: 0 };
+      
+      viewStart.classList.add('hidden');
+      viewResult.classList.add('hidden');
+      viewLoading.classList.add('hidden');
+      viewQuestion.classList.remove('hidden');
+ 
+      renderQuestion();
+    }
+ 
+    // 質問描画
+    function renderQuestion() {
+      const q = QUESTIONS[currentStep];
+      const progress = Math.round(((currentStep + 1) / QUESTIONS.length) * 100);
+ 
+      questionIndicator.textContent = `質問 ${currentStep + 1} / ${QUESTIONS.length}`;
+      progressPercent.textContent = `${progress}%`;
+      progressBar.style.width = `${progress}%`;
+ 
+      qCategory.textContent = q.category;
+      qText.textContent = q.question;
+ 
+      optionsContainer.innerHTML = '';
+      q.options.forEach((opt) => {
+        const btn = document.createElement('button');
+        btn.className = "w-full p-4 bg-white hover:bg-amber-50/70 border border-bakery-wheat active:border-bakery-accent rounded-2xl flex items-center justify-between text-left transition card-press shadow-sm group";
+        
+        btn.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="text-2xl p-2 rounded-xl bg-bakery-wheat/40 group-hover:scale-110 transition-transform">${opt.icon}</span>
+            <span class="text-sm font-bold text-bakery-choc group-hover:text-bakery-accent transition-colors">${opt.label}</span>
+          </div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-bakery-crust group-hover:text-bakery-accent transition-colors shrink-0"></i>
+        `;
+ 
+        btn.addEventListener('click', () => handleAnswer(opt.type));
+        optionsContainer.appendChild(btn);
+      });
+ 
+      lucide.createIcons();
+    }
+ 
+    // 回答選択処理
+    function handleAnswer(type) {
+      if (scores[type] !== undefined) {
+        scores[type] += 1;
+      }
+ 
+      currentStep++;
+      if (currentStep < QUESTIONS.length) {
+        renderQuestion();
+      } else {
+        showLoadingAndResult();
+      }
+    }
+ 
+    // ローディング後に結果を表示
+    function showLoadingAndResult() {
+      viewQuestion.classList.add('hidden');
+      viewLoading.classList.remove('hidden');
+ 
+      let winnerType = 'classic';
+      let highestScore = -1;
+ 
+      for (const [key, val] of Object.entries(scores)) {
+        if (val > highestScore) {
+          highestScore = val;
+          winnerType = key;
+        }
+      }
+ 
+      currentResult = RESULTS[winnerType] || RESULTS.classic;
+ 
+      setTimeout(() => {
+        viewLoading.classList.add('hidden');
+        renderResult(currentResult);
+        viewResult.classList.remove('hidden');
+        triggerConfetti();
+      }, 900);
+    }
+ 
+    // 結果画面の反映
+    function renderResult(res) {
+      document.getElementById('res-icon').textContent = res.icon;
+      document.getElementById('res-catchphrase').textContent = res.catchphrase;
+      document.getElementById('res-bread-name').textContent = res.breadName;
+      document.getElementById('res-description').textContent = res.description;
+      document.getElementById('res-recommend-time').textContent = res.recommendTime;
+      
+      document.getElementById('res-shop-name').textContent = res.shopName;
+      document.getElementById('res-shop-area').textContent = res.shopArea;
+      document.getElementById('res-shop-address').textContent = res.shopAddress;
+      document.getElementById('res-shop-feature').textContent = res.shopFeature;
+ 
+      const query = encodeURIComponent(`延岡市 ${res.shopName.split('/')[0]}`);
+      btnMap.href = `https://www.google.com/maps/search/?api=1&query=${query}`;
+ 
+      lucide.createIcons();
+    }
+ 
+    // 紙吹雪アニメーション
+    function triggerConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 50,
+          spread: 60,
+          origin: { y: 0.6 },
+          colors: ['#E65C00', '#F5EBE1', '#E2C799','#C08240']
+        });
+      }
+    }
+
+    // --- QRコード関連処理 ---
+    function openSiteQrModal() {
+      activeQrUrl = window.location.href;
+      currentQrFileName = 'nobeoka-bakery-navi-site.png';
+      qrModalTag.textContent = "サイトアクセス用";
+      qrModalTitle.textContent = "診断サイトのQRコード";
+      generateAndShowQr(activeQrUrl);
+    }
+
+    function openResultQrModal() {
+      if (!currentResult) return;
+      activeQrUrl = window.location.href;
+      currentQrFileName = `nobeoka-bread-${currentResult.breadName}.png`;
+      qrModalTag.textContent = "診断結果共有用";
+      qrModalTitle.textContent = `${currentResult.breadName}`;
+      generateAndShowQr(activeQrUrl);
+    }
+
+    function generateAndShowQr(url) {
+      qrContainer.innerHTML = '';
+      qrcodeInstance = new QRCode(qrContainer, {
+        text: url,
+        width: 160,
+        height: 160,
+        colorDark : "#4A2E18",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
+      });
+
+      modalQr.classList.remove('opacity-0', 'pointer-events-none');
+      modalQr.classList.add('opacity-100');
+    }
+
+    function closeQrModal() {
+      modalQr.classList.add('opacity-0', 'pointer-events-none');
+      modalQr.classList.remove('opacity-100');
+    }
+
+    function downloadQrCode() {
+      const img = qrContainer.querySelector('img');
+      const canvas = qrContainer.querySelector('canvas');
+      let imageSrc = '';
+
+      if (img && img.src) {
+        imageSrc = img.src;
+      } else if (canvas) {
+        imageSrc = canvas.toDataURL("image/png");
+      }
+
+      if (imageSrc) {
+        const link = document.createElement('a');
+        link.href = imageSrc;
+        link.download = currentQrFileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast('QRコード画像を保存しました！');
+      } else {
+        showToast('画像の生成に失敗しました。');
+      }
+    }
+
+    function copyCurrentQrUrl() {
+      if (!activeQrUrl) return;
+      copyToClipboard(activeQrUrl, 'URLをクリップボードにコピーしました！');
+    }
+ 
+    // シェア機能
+    function shareResult() {
+      if (!currentResult) return;
+      const shareText = `【延岡の推しパン診断】
+私の運命の推しパンは…
+🥖「${currentResult.breadName}」
+📍買えるお店: ${currentResult.shopName}（${currentResult.shopArea}）
+
+延岡で今すぐ食べたい推しパンを診断しよう！`;
+      const currentUrl = window.location.href;
+ 
+      if (navigator.share) {
+        navigator.share({
+          title: '延岡の街で見つける！あなたへの推しパン診断',
+          text: shareText,
+          url: currentUrl
+        }).catch(() => {
+          copyToClipboard(shareText);
+        });
+      } else {
+        copyToClipboard(shareText);
+      }
+    }
+ 
+    // クリップボードコピー
+    function copyToClipboard(text, msg) {
+      const tempTextArea = document.createElement('textarea');
+      tempTextArea.value = text;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      try {
+        document.execCommand('copy');
+        showToast(msg || '診断結果をクリップボードにコピーしました！');
+      } catch (err) {
+        showToast('コピーできませんでした。');
+      }
+      document.body.removeChild(tempTextArea);
+    }
+ 
+    // トースト通知表示
+    function showToast(message) {
+      toastText.textContent = message;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      toast.classList.add('opacity-100');
+      
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none');
+        toast.classList.remove('opacity-100');
+      }, 2500);
+    }
+ 
+    // 最初からやり直す
+    function resetQuiz() {
+      viewResult.classList.add('hidden');
+      viewStart.classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
